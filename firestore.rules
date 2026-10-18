@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(resourceData) {
+      return resourceData.ownerId == request.auth.uid;
+    }
+
+    function isValidLeaderboard(data) {
+      return data.name is string 
+        && data.name.size() >= 1 
+        && data.name.size() <= 100
+        && data.ownerId is string
+        && data.sourceType in ['followers', 'following', 'both', 'manual']
+        && data.members is list
+        && data.members.size() <= 500
+        && data.createdAt is string;
+    }
+
+    match /leaderboards/{leaderboardId} {
+      // Listing is restricted to the authenticated owner to prevent unauthorized scraping
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      // Single-document read is public to allow view-only sharing via direct links
+      allow get: if true;
+
+      // Creation is strictly restricted to authenticated owner
+      allow create: if isSignedIn() 
+        && request.resource.data.ownerId == request.auth.uid
+        && isValidLeaderboard(request.resource.data);
+
+      // Updates and deletions are strictly restricted to the board owner
+      allow update: if isSignedIn() 
+        && isOwner(resource.data)
+        && request.resource.data.ownerId == request.auth.uid
+        && isValidLeaderboard(request.resource.data);
+
+      allow delete: if isSignedIn() && isOwner(resource.data);
+    }
+  }
+}

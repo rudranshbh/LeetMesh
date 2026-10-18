@@ -1,0 +1,6 @@
+{
+  "name": "LeetLeader",
+  "description": "Create customizable LeetCode leaderboards from followers, following, or custom users with real-time stats and sorting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

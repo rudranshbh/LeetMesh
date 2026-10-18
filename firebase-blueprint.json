@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "leaderboard": {
+      "title": "Leaderboard",
+      "description": "A saved customizable LeetCode leaderboard owned by an authenticated user.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "User-assigned title for the leaderboard.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional notes or description.",
+          "maxLength": 500
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the leaderboard owner.",
+          "maxLength": 128
+        },
+        "sourceType": {
+          "type": "string",
+          "description": "Origin of the member list: followers, following, both, or manual.",
+          "enum": ["followers", "following", "both", "manual"]
+        },
+        "sourceUsername": {
+          "type": "string",
+          "description": "Originating LeetCode username if generated from social graph.",
+          "maxLength": 100
+        },
+        "autoRefetchMembers": {
+          "type": "boolean",
+          "description": "Whether refreshing is allowed to update member list or only member statistics."
+        },
+        "members": {
+          "type": "array",
+          "description": "List of user statistics entries for this leaderboard."
+        },
+        "sortBy": {
+          "type": "string",
+          "description": "Default sorting column ID."
+        },
+        "sortOrder": {
+          "type": "string",
+          "description": "Sort direction.",
+          "enum": ["asc", "desc"]
+        },
+        "customColumns": {
+          "type": "array",
+          "description": "Keys of visible columns in the table."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of creation date."
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last stats update or modification."
+        }
+      },
+      "required": ["name", "ownerId", "sourceType", "members", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/leaderboards/{leaderboardId}": {
+      "schema": "leaderboard",
+      "description": "Stores user-created custom LeetCode leaderboards."
+    }
+  }
+}
