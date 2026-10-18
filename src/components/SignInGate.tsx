@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trophy, LogIn, Sparkles, Loader2, Users, BarChart2, Share2, ShieldCheck, ArrowRight, Zap, Terminal, AlertTriangle } from 'lucide-react';
+import { Trophy, LogIn, Sparkles, Loader2, Users, BarChart2, Share2, ShieldCheck, ArrowRight, Zap, Terminal } from 'lucide-react';
 import { auth, provider, signInWithPopup, signInWithRedirect } from '../firebase';
 import { AnimatedMeshArtwork } from './AnimatedMeshArtwork';
 
@@ -10,29 +10,18 @@ interface SignInGateProps {
 export function SignInGate({ hasSharedLink }: SignInGateProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isUnauthorizedDomain, setIsUnauthorizedDomain] = useState(false);
 
   const handleSignIn = async () => {
     setError(null);
-    setIsUnauthorizedDomain(false);
     setIsSigningIn(true);
     try {
       await signInWithPopup(auth, provider);
     } catch (err: any) {
       console.error('Sign-in error:', err);
-      if (err.code === 'auth/unauthorized-domain' || err.message?.includes('unauthorized-domain')) {
-        setIsUnauthorizedDomain(true);
-      } else {
-        // Try fallback to redirect if popup is blocked or fails cross-origin
-        try {
-          await signInWithRedirect(auth, provider);
-        } catch (redirectErr: any) {
-          if (redirectErr.code === 'auth/unauthorized-domain' || redirectErr.message?.includes('unauthorized-domain')) {
-            setIsUnauthorizedDomain(true);
-          } else {
-            setError(redirectErr.message || err.message || 'Failed to sign in with Google. Please try again.');
-          }
-        }
+      try {
+        await signInWithRedirect(auth, provider);
+      } catch (redirectErr: any) {
+        setError(redirectErr.message || err.message || 'Failed to sign in with Google. Please try again.');
       }
     } finally {
       setIsSigningIn(false);
@@ -125,21 +114,6 @@ export function SignInGate({ hasSharedLink }: SignInGateProps) {
               )}
             </button>
 
-            {/* Unauthorized Domain Guide Box (No Demo Button) */}
-            {isUnauthorizedDomain && (
-              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs space-y-2 animate-in fade-in">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong>Action Required for Vercel / Deployed Domain:</strong> Google OAuth requires your Vercel URL to be whitelisted in your Firebase Console.
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
-                  Go to <strong className="text-amber-300">Firebase Console</strong> → <strong className="text-amber-300">Authentication</strong> → <strong className="text-amber-300">Settings</strong> → <strong className="text-amber-300">Authorized domains</strong> → Click <strong className="text-amber-300">Add domain</strong> and paste your Vercel app domain.
-                </p>
-              </div>
-            )}
-
             {error && (
               <p className="text-xs text-rose-400 bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20">
                 {error}
@@ -150,22 +124,6 @@ export function SignInGate({ hasSharedLink }: SignInGateProps) {
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
               <span>Protected by Google Firebase Auth. No API keys needed.</span>
             </p>
-          </div>
-
-          {/* Quick Stats Grid */}
-          <div className="pt-4 grid grid-cols-3 gap-3 max-w-lg mx-auto lg:mx-0 border-t border-slate-800/80">
-            <div>
-              <p className="text-xl sm:text-2xl font-black font-mono text-white">100%</p>
-              <p className="text-xs text-slate-400">Authentic GraphQL</p>
-            </div>
-            <div>
-              <p className="text-xl sm:text-2xl font-black font-mono text-amber-400">1-Click</p>
-              <p className="text-xs text-slate-400">View-Only Sharing</p>
-            </div>
-            <div>
-              <p className="text-xl sm:text-2xl font-black font-mono text-emerald-400">0s Delay</p>
-              <p className="text-xs text-slate-400">Fast In-Memory Cache</p>
-            </div>
           </div>
         </div>
 
