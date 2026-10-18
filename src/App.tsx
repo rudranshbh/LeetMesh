@@ -54,41 +54,6 @@ export default function App() {
     const searchParams = new URLSearchParams(window.location.search);
     const sharedId = searchParams.get('board') || searchParams.get('share');
 
-    // Check if demo mode was launched due to unauthorized-domain
-    const isDemo = localStorage.getItem('leetmesh_demo_mode') === 'true';
-    if (isDemo) {
-      setUser({
-        uid: 'demo_user_123',
-        displayName: 'LeetMesh Reviewer',
-        email: 'reviewer@leetmesh.dev',
-        photoURL: 'https://assets.leetcode.com/users/default_avatar.jpg',
-        emailVerified: true,
-        isAnonymous: false,
-        metadata: {},
-        providerData: [],
-        refreshToken: '',
-        tenantId: null,
-        delete: async () => {},
-        getIdToken: async () => 'demo_token',
-        getIdTokenResult: async () => ({} as any),
-        reload: async () => {},
-        toJSON: () => ({})
-      } as any);
-      setAuthLoading(false);
-
-      if (sharedId) {
-        fetchLeaderboardById(sharedId)
-          .then((sharedDoc) => {
-            if (sharedDoc) {
-              setActiveBoard(sharedDoc);
-              showToast(`Opened leaderboard: "${sharedDoc.name}"`, 'info');
-            }
-          })
-          .catch(console.error);
-      }
-      return;
-    }
-
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);

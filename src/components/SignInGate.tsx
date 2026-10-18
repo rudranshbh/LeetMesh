@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Trophy, LogIn, Sparkles, Loader2, Users, BarChart2, Share2, ShieldCheck, ArrowRight, Zap, Terminal, AlertTriangle } from 'lucide-react';
-import { auth, provider, signInWithPopup } from '../firebase';
+import { auth, provider, signInWithPopup, signInWithRedirect } from '../firebase';
 import { AnimatedMeshArtwork } from './AnimatedMeshArtwork';
 
 interface SignInGateProps {
@@ -23,16 +23,20 @@ export function SignInGate({ hasSharedLink }: SignInGateProps) {
       if (err.code === 'auth/unauthorized-domain' || err.message?.includes('unauthorized-domain')) {
         setIsUnauthorizedDomain(true);
       } else {
-        setError(err.message || 'Failed to sign in with Google. Please try again.');
+        // Try fallback to redirect if popup is blocked or fails cross-origin
+        try {
+          await signInWithRedirect(auth, provider);
+        } catch (redirectErr: any) {
+          if (redirectErr.code === 'auth/unauthorized-domain' || redirectErr.message?.includes('unauthorized-domain')) {
+            setIsUnauthorizedDomain(true);
+          } else {
+            setError(redirectErr.message || err.message || 'Failed to sign in with Google. Please try again.');
+          }
+        }
       }
     } finally {
       setIsSigningIn(false);
     }
-  };
-
-  const handleLaunchDemo = () => {
-    localStorage.setItem('leetmesh_demo_mode', 'true');
-    window.location.reload();
   };
 
   return (
@@ -121,21 +125,18 @@ export function SignInGate({ hasSharedLink }: SignInGateProps) {
               )}
             </button>
 
-            {/* Unauthorized Domain Fallback Notice & Instant Demo Launch Button */}
+            {/* Unauthorized Domain Guide Box (No Demo Button) */}
             {isUnauthorizedDomain && (
-              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs space-y-3 animate-in fade-in">
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs space-y-2 animate-in fade-in">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Unauthorized Preview Domain (auth/unauthorized-domain):</strong> Google OAuth popups require this preview URL to be whitelisted in Firebase Console. You can instantly bypass this restriction and explore LeetMesh in Demo Mode!
+                    <strong>Action Required for Vercel / Deployed Domain:</strong> Google OAuth requires your Vercel URL to be whitelisted in your Firebase Console.
                   </div>
                 </div>
-                <button
-                  onClick={handleLaunchDemo}
-                  className="w-full py-2.5 px-4 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-lg transition-colors cursor-pointer text-xs shadow"
-                >
-                  🚀 Launch Demo / Preview Mode (Instant Access)
-                </button>
+                <p className="text-[11px] text-slate-300 leading-relaxed bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
+                  Go to <strong className="text-amber-300">Firebase Console</strong> → <strong className="text-amber-300">Authentication</strong> → <strong className="text-amber-300">Settings</strong> → <strong className="text-amber-300">Authorized domains</strong> → Click <strong className="text-amber-300">Add domain</strong> and paste your Vercel app domain.
+                </p>
               </div>
             )}
 
@@ -147,7 +148,7 @@ export function SignInGate({ hasSharedLink }: SignInGateProps) {
 
             <p className="text-xs text-slate-500 flex items-center justify-center lg:justify-start gap-1.5 pt-1">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Protected by Google Firebase Auth & cloud storage. No API keys needed.</span>
+              <span>Protected by Google Firebase Auth. No API keys needed.</span>
             </p>
           </div>
 
