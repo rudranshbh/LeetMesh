@@ -28,7 +28,7 @@ export function Navbar({ user, onOpenCreate, onOpenDrawer, savedCount }: NavbarP
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-500/20 ring-1 ring-amber-400/30">
@@ -38,9 +38,6 @@ export function Navbar({ user, onOpenCreate, onOpenDrawer, savedCount }: NavbarP
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-xl tracking-tight text-white">
                 Leet<span className="text-amber-400">Mesh</span>
-              </span>
-              <span className="text-[10px] font-mono tracking-wider uppercase px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                PRO
               </span>
             </div>
             <p className="text-xs text-slate-400 hidden sm:block">

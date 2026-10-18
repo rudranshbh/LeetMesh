@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trophy, LogIn, Sparkles, Loader2, Users, BarChart2, Share2, ShieldCheck, ArrowRight, Zap, Terminal } from 'lucide-react';
+import { Trophy, LogIn, Sparkles, Loader2, Users, BarChart2, Share2, ShieldCheck, ArrowRight, Zap, Terminal, AlertTriangle } from 'lucide-react';
 import { auth, provider, signInWithPopup } from '../firebase';
 import { AnimatedMeshArtwork } from './AnimatedMeshArtwork';
 
@@ -10,18 +10,29 @@ interface SignInGateProps {
 export function SignInGate({ hasSharedLink }: SignInGateProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isUnauthorizedDomain, setIsUnauthorizedDomain] = useState(false);
 
   const handleSignIn = async () => {
     setError(null);
+    setIsUnauthorizedDomain(false);
     setIsSigningIn(true);
     try {
       await signInWithPopup(auth, provider);
     } catch (err: any) {
       console.error('Sign-in error:', err);
-      setError(err.message || 'Failed to sign in with Google. Please try again.');
+      if (err.code === 'auth/unauthorized-domain' || err.message?.includes('unauthorized-domain')) {
+        setIsUnauthorizedDomain(true);
+      } else {
+        setError(err.message || 'Failed to sign in with Google. Please try again.');
+      }
     } finally {
       setIsSigningIn(false);
     }
+  };
+
+  const handleLaunchDemo = () => {
+    localStorage.setItem('leetmesh_demo_mode', 'true');
+    window.location.reload();
   };
 
   return (
@@ -33,7 +44,7 @@ export function SignInGate({ hasSharedLink }: SignInGateProps) {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div className="relative max-w-7xl 2xl:max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         {/* Left Column: Hero Copy & Google Auth */}
         <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
           {/* Beacon pill */}
@@ -109,6 +120,24 @@ export function SignInGate({ hasSharedLink }: SignInGateProps) {
                 </>
               )}
             </button>
+
+            {/* Unauthorized Domain Fallback Notice & Instant Demo Launch Button */}
+            {isUnauthorizedDomain && (
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs space-y-3 animate-in fade-in">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong>Unauthorized Preview Domain (auth/unauthorized-domain):</strong> Google OAuth popups require this preview URL to be whitelisted in Firebase Console. You can instantly bypass this restriction and explore LeetMesh in Demo Mode!
+                  </div>
+                </div>
+                <button
+                  onClick={handleLaunchDemo}
+                  className="w-full py-2.5 px-4 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-lg transition-colors cursor-pointer text-xs shadow"
+                >
+                  🚀 Launch Demo / Preview Mode (Instant Access)
+                </button>
+              </div>
+            )}
 
             {error && (
               <p className="text-xs text-rose-400 bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20">

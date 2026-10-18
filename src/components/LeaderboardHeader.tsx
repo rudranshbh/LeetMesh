@@ -108,18 +108,10 @@ export function LeaderboardHeader({
             <span className="font-medium text-slate-300">{board.members.length} coders</span>
             <span>•</span>
             <span>Updated {formatRelativeTime(lastUpdatedSec)}</span>
-            <span>•</span>
-            <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-400 font-mono" title="Automatically fetches fresh statistics whenever this browser tab is focused">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-              </span>
-              <span>Auto-Sync on Tab Focus</span>
-            </span>
             {board.description && (
               <>
                 <span>•</span>
-                <span className="text-slate-500 truncate max-w-[200px]">{board.description}</span>
+                <span className="text-slate-500 truncate max-w-[240px]">{board.description}</span>
               </>
             )}
           </div>

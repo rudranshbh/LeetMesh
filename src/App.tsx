@@ -54,6 +54,41 @@ export default function App() {
     const searchParams = new URLSearchParams(window.location.search);
     const sharedId = searchParams.get('board') || searchParams.get('share');
 
+    // Check if demo mode was launched due to unauthorized-domain
+    const isDemo = localStorage.getItem('leetmesh_demo_mode') === 'true';
+    if (isDemo) {
+      setUser({
+        uid: 'demo_user_123',
+        displayName: 'LeetMesh Reviewer',
+        email: 'reviewer@leetmesh.dev',
+        photoURL: 'https://assets.leetcode.com/users/default_avatar.jpg',
+        emailVerified: true,
+        isAnonymous: false,
+        metadata: {},
+        providerData: [],
+        refreshToken: '',
+        tenantId: null,
+        delete: async () => {},
+        getIdToken: async () => 'demo_token',
+        getIdTokenResult: async () => ({} as any),
+        reload: async () => {},
+        toJSON: () => ({})
+      } as any);
+      setAuthLoading(false);
+
+      if (sharedId) {
+        fetchLeaderboardById(sharedId)
+          .then((sharedDoc) => {
+            if (sharedDoc) {
+              setActiveBoard(sharedDoc);
+              showToast(`Opened leaderboard: "${sharedDoc.name}"`, 'info');
+            }
+          })
+          .catch(console.error);
+      }
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
@@ -562,7 +597,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="flex-1 max-w-7xl 2xl:max-w-[1600px] w-full mx-auto px-3 sm:px-6 lg:px-8 2xl:px-12 py-4 sm:py-6 space-y-6">
         {!user ? (
           // Strictly require Google sign-in before anything can happen
           <SignInGate hasSharedLink={hasSharedParam} />
